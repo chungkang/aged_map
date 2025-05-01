@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>고령화 지도 & 병원 위치</title>
+
+  <!-- Mapbox 스타일과 Leaflet CSS 추가 -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v2.10.1/mapbox-gl.css" />
+  <link rel="stylesheet" href="style.css"> <!-- 사용자 정의 스타일 추가 -->
+  
+  <!-- Leaflet MarkerCluster CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />  
+</head>
+<body>
+
+  <!-- 지도 표시할 div -->
+  <div id="map"></div>
+
+  <!-- JavaScript 파일 연결 -->
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>  <script src="https://api.mapbox.com/mapbox-gl-js/v2.10.1/mapbox-gl.js"></script>
+  <script src="app.js"></script>
+
+
+</body>
+</html>
