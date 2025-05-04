@@ -46,15 +46,15 @@ fetch('hospital_data_3_4.geojson')
           const lat = layer.getLatLng().lat;
           const lng = layer.getLatLng().lng;
           drawIsochrone(lat, lng);
-          layer.openPopup(); // 클릭 시 팝업 열기 추가 (모바일 대응)
         });
 
-        // 데스크탑에서는 hover 시 팝업 열기
-        if (!L.Browser.mobile) {
-          layer.on('mouseover', function() {
-            layer.openPopup();
-          });
-        }
+        layer.on('mouseover', function() {
+          layer.openPopup();
+        });
+
+        layer.on('mouseout', function() {
+          // 마우스아웃 시 팝업 유지
+        });
       }
     }).addTo(hospitalLayer);
 
