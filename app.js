@@ -9,7 +9,7 @@ L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{
 }).addTo(map);
 
 // GeoJSON 파일 로드 - 고령화 지수 지역
-let agingLayer; // 고령화 레이어를 전역 변수로 선언
+let agingLayer;
 
 fetch('aged_administrative_region_2024.geojson')
   .then(response => response.json())
@@ -19,62 +19,59 @@ fetch('aged_administrative_region_2024.geojson')
         return getColorStyle(feature.properties.aged);
       },
       onEachFeature: onEachFeature
-    }).addTo(map); // 여기 추가!
+    }).addTo(map);
   });
 
+// 병원 데이터 로드 및 isochrone 연동
+let isochroneLayer;
 
-// GeoJSON 파일 로드 - 병원 데이터
 fetch('hospital_data_3_4.geojson')
   .then(response => response.json())
   .then(data => {
-    // 클러스터 그룹 생성
     const hospitalLayer = L.markerClusterGroup();
 
-    // 병원 위치를 지도에 표시 (클러스터링 추가)
     L.geoJSON(data, {
       pointToLayer: function(feature, latlng) {
         return L.marker(latlng);
       },
       onEachFeature: function(feature, layer) {
-        // 병원 이름과 홈페이지를 표시하는 팝업
-        layer.bindPopup(`<a href="${feature.properties.병원홈페이지}" target="_blank">${feature.properties.요양기관명}</a>`);
-        
-        // 마우스 오버 시 팝업 표시
-        layer.on('mouseover', function() {
-          layer.openPopup();  // 팝업을 열기
-        });
+        const hospitalName = feature.properties.요양기관명;
 
-        // 마우스 아웃 시 팝업을 닫지 않도록 설정
-        layer.on('mouseout', function() {
-          // 여기선 팝업을 닫지 않음
-        });
+        // 간단한 팝업 (정보 표시용)
+        layer.bindPopup(hospitalName);
 
-        // 클릭 시 팝업을 열거나 닫기
+        // 마커 클릭 시 isochrone 실행
         layer.on('click', function() {
-          if (layer.isPopupOpen()) {
-            layer.closePopup();  // 이미 열려있으면 닫기
-          } else {
-            layer.openPopup();  // 팝업 열기
-          }
+          const lat = layer.getLatLng().lat;
+          const lng = layer.getLatLng().lng;
+          drawIsochrone(lat, lng);
+        });
+
+        layer.on('mouseover', function() {
+          layer.openPopup();
+        });
+
+        layer.on('mouseout', function() {
+          // 마우스아웃 시 팝업 유지
         });
       }
     }).addTo(hospitalLayer);
 
-    // 클러스터 그룹을 지도에 추가
     hospitalLayer.addTo(map);
   });
 
-// 고령화 지수에 따른 색상 지정
+
+// 고령화 색상 스타일
 function getColorStyle(aged) {
   let color;
   if (aged >= 30) {
-    color = 'red'; // 초고령 (30% 이상)
+    color = 'red';
   } else if (aged >= 20) {
-    color = 'orange'; // 고령 (20% 이상)
+    color = 'orange';
   } else if (aged >= 15) {
-    color = 'yellow'; // 저고령 (15% 이상)
+    color = 'yellow';
   } else {
-    color = 'lightgreen'; // 저고령 이하
+    color = 'lightgreen';
   }
   return {
     fillColor: color,
@@ -84,7 +81,7 @@ function getColorStyle(aged) {
   };
 }
 
-// 고령화 지역에 마우스 Hover 시 팝업 표시 (autoPan 방지)
+// 고령화 지자체 hover 팝업
 function onEachFeature(feature, layer) {
   const popupContent = ` 
     <strong>지역: ${feature.properties.SIDO_NM}</strong><br>
@@ -92,7 +89,7 @@ function onEachFeature(feature, layer) {
     인구수: ${feature.properties.Population}명
   `;
   const popup = L.popup({
-    autoPan: false, // 팝업에 의해 지도 이동 방지
+    autoPan: false,
     closeButton: false,
     offset: [0, -10]
   }).setContent(popupContent);
@@ -106,40 +103,13 @@ function onEachFeature(feature, layer) {
   });
 }
 
-
-// 지도 줌 레벨에 따른 고령화 레이어 표시/숨기기
-map.on('zoomend', function() {
-  const zoomLevel = map.getZoom();
-  
-  // 줌 레벨이 15 이상이면 고령화 레이어를 제거하고, 15 미만이면 다시 추가
-  if (zoomLevel >= 15) {
-    if (map.hasLayer(agingLayer)) {
-      map.removeLayer(agingLayer); // 고령화 레이어 제거
-    }
-  } else {
-    if (!map.hasLayer(agingLayer)) {
-      agingLayer.addTo(map); // 고령화 레이어 추가
-    }
-  }
-});
-
-let isochroneLayer; // isochrone 폴리곤 레이어를 전역으로 선언
-
-map.on('click', function(e) {
-  const zoomLevel = map.getZoom();
-
-  if (zoomLevel < 15) return; // 15 미만에서는 실행하지 않음
-
-  const lat = e.latlng.lat;
-  const lng = e.latlng.lng;
-
-  // 기존 isochrone 레이어 제거
+// Isochrone 그리기 함수
+function drawIsochrone(lat, lng) {
   if (isochroneLayer && map.hasLayer(isochroneLayer)) {
     map.removeLayer(isochroneLayer);
   }
 
-  // Mapbox Isochrone API 호출
-  const profile = 'driving'; // 도보: walking, 자전거: cycling
+  const profile = 'driving';
   const minutes = 30;
   const accessToken = 'pk.eyJ1IjoiY2h1bmdrYW5nIiwiYSI6ImNtYTVocWN3YzBoNXkydXNpcmI3bjc1NWYifQ.oAxBjVUo3AVCUtNJ2ewv4w';
 
@@ -158,4 +128,4 @@ map.on('click', function(e) {
       }).addTo(map);
     })
     .catch(err => console.error('Isochrone API 에러:', err));
-});
+}
