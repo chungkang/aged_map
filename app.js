@@ -2,11 +2,12 @@
 const map = L.map('map').setView([36.5, 128], 7); // 서울 중심으로 초기 설정
 
 // Mapbox 기본 스타일 설정
-L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiY2h1bmdrYW5nIiwiYSI6ImNtYTVocWN3YzBoNXkydXNpcmI3bjc1NWYifQ.oAxBjVUo3AVCUtNJ2ewv4w', {
-  attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
-    'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-  maxZoom: 19,
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap & CartoDB',
+  subdomains: 'abcd',
+  maxZoom: 16
 }).addTo(map);
+
 
 // GeoJSON 파일 로드 - 고령화 지수 지역
 let agingLayer;
@@ -121,7 +122,7 @@ function drawIsochrone(lat, lng) {
       isochroneLayer = L.geoJSON(data, {
         style: {
           fillColor: 'blue',
-          fillOpacity: 0.3,
+          fillOpacity: 0.2,
           color: 'blue',
           weight: 2
         }
@@ -129,3 +130,48 @@ function drawIsochrone(lat, lng) {
     })
     .catch(err => console.error('Isochrone API 에러:', err));
 }
+
+// 고령화 수준 + Isochrone 범례 추가
+const legend = L.control({ position: 'bottomright' });
+
+legend.onAdd = function(map) {
+  const div = L.DomUtil.create('div', 'info legend');
+  const grades = [15, 20, 30];
+  const labels = [];
+
+  // 고령화 단계 범례
+  labels.push('<strong>고령화 단계</strong>');
+
+  for (let i = 0; i < grades.length; i++) {
+    let from = grades[i];
+    let color = '';
+
+    if (from === 15) {
+      color = 'yellow';
+      labels.push(
+        `<i style="background:${color}; width: 18px; height: 18px; display: inline-block; margin-right: 8px;"></i>저고령사회 (≥ 15%)`
+      );
+    } else if (from === 20) {
+      color = 'orange';
+      labels.push(
+        `<i style="background:${color}; width: 18px; height: 18px; display: inline-block; margin-right: 8px;"></i>고령사회 (≥ 20%)`
+      );
+    } else if (from === 30) {
+      color = 'red';
+      labels.push(
+        `<i style="background:${color}; width: 18px; height: 18px; display: inline-block; margin-right: 8px;"></i>초고령사회 (≥ 30%)`
+      );
+    }
+  }
+
+  // Isochrone 범위 설명 추가
+  labels.push('<br><strong>접근성 (Isochrone)</strong>');
+  labels.push(
+    `<i style="background:blue; width: 18px; height: 18px; display: inline-block; margin-right: 8px; opacity: 0.2; border: 1px solid blue;"></i>차로 30분 이내 이동 가능 범위`
+  );
+
+  div.innerHTML = labels.join('<br>');
+  return div;
+};
+
+legend.addTo(map);
