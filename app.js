@@ -38,22 +38,24 @@ fetch('hospital_data_3_4.geojson')
       onEachFeature: function(feature, layer) {
         const hospitalName = feature.properties.요양기관명;
 
-        // 간단한 팝업 (정보 표시용)
         layer.bindPopup(hospitalName);
-
-        // 마커 클릭 시 isochrone 실행
-        layer.on('click', function() {
+      
+        // 공통 처리 함수
+        const handleIsochrone = () => {
           const lat = layer.getLatLng().lat;
           const lng = layer.getLatLng().lng;
           drawIsochrone(lat, lng);
-        });
-
+        };
+      
+        // PC: 클릭
+        layer.on('click', handleIsochrone);
+      
+        // 모바일: 터치
+        layer.on('touchstart', handleIsochrone);
+      
+        // 마우스오버
         layer.on('mouseover', function() {
           layer.openPopup();
-        });
-
-        layer.on('mouseout', function() {
-          // 마우스아웃 시 팝업 유지
         });
       }
     }).addTo(hospitalLayer);
