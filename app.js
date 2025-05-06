@@ -112,11 +112,10 @@ function drawIsochrone(lat, lng) {
     map.removeLayer(isochroneLayer);
   }
 
-  const profile = 'driving';
   const minutes = 30;
-  const accessToken = 'pk.eyJ1IjoiY2h1bmdrYW5nIiwiYSI6ImNtYTVocWN3YzBoNXkydXNpcmI3bjc1NWYifQ.oAxBjVUo3AVCUtNJ2ewv4w';
 
-  const url = `https://api.mapbox.com/isochrone/v1/mapbox/${profile}/${lng},${lat}?contours_minutes=${minutes}&polygons=true&access_token=${accessToken}`;
+  // Vercel에 배포한 API 엔드포인트 사용 (드라이빙 프로파일 기본)
+  const url = `https://aged-map.vercel.app/api/isochrone?lat=${lat}&lng=${lng}&minutes=${minutes}&profile=driving`;
 
   fetch(url)
     .then(response => response.json())
@@ -132,6 +131,7 @@ function drawIsochrone(lat, lng) {
     })
     .catch(err => console.error('Isochrone API 에러:', err));
 }
+
 
 // 고령화 수준 + Isochrone 범례 추가
 const legend = L.control({ position: 'bottomright' });
