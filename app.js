@@ -64,6 +64,22 @@ fetch('hospital_data_3_4.geojson')
   });
 
 
+// 도로 레이어 추가
+let roadLayer;
+
+fetch('road_network.geojson') // 도로 GeoJSON 파일 경로
+  .then(response => response.json())
+  .then(data => {
+    roadLayer = L.geoJSON(data, {
+      style: {
+        color: '#555',       // 도로 색상 (어두운 회색 계열)
+        weight: 1.5,         // 선 두께
+        opacity: 0.8
+      }
+    }).addTo(map); // 지도에 먼저 추가하여 하위 레이어로 위치시킴
+  });
+
+
 // 고령화 색상 스타일
 function getColorStyle(aged) {
   let color;
@@ -170,6 +186,12 @@ legend.onAdd = function(map) {
   labels.push('<br><strong>접근성 (Isochrone)</strong>');
   labels.push(
     `<i style="background:blue; width: 18px; height: 18px; display: inline-block; margin-right: 8px; opacity: 0.2; border: 1px solid blue;"></i>차로 30분 이내 이동 가능 범위`
+  );
+
+  // 기존 범례 내용에 이어서 추가
+  labels.push('<br><strong>도로망</strong>');
+  labels.push(
+    `<i style="background:#555; width: 18px; height: 3px; display: inline-block; margin-right: 8px;"></i>주요 도로`
   );
 
   div.innerHTML = labels.join('<br>');
