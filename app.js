@@ -67,7 +67,7 @@ fetch('hospital_data_3_4.geojson')
 // 도로 레이어 추가
 let roadLayer;
 
-fetch('road_network.geojson') // 도로 GeoJSON 파일 경로
+fetch('ex_highway.geojson') // 도로 GeoJSON 파일 경로
   .then(response => response.json())
   .then(data => {
     roadLayer = L.geoJSON(data, {
