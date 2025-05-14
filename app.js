@@ -75,7 +75,7 @@ fetch('road.geojson')
     roadLayer.addTo(map);
   });
 
-// Isochrone 그리기 함수
+// Isochrone 그리기 함수에서 위도 경도 사용
 function drawIsochrone(lat, lng) {
   if (isochroneLayer && map.hasLayer(isochroneLayer)) {
     map.removeLayer(isochroneLayer);
@@ -97,18 +97,25 @@ function drawIsochrone(lat, lng) {
       }).addTo(map);
 
       map.fitBounds(isochroneLayer.getBounds());
-
-      // 병원 필터 및 popup 업데이트
-      updateIsochronePopup(data, lat, lng);
+      updateIsochronePopup(data);
     });
 }
 
 // 지도 클릭 시 Isochrone 계산
-map.on('click', e => drawIsochrone(e.latlng.lat, e.latlng.lng));
+// 지도 클릭 시 Isochrone 계산
+map.on('click', e => {
+  const lat = e.latlng.lat.toFixed(6); // 위도를 소수점 6자리로 제한
+  const lng = e.latlng.lng.toFixed(6); // 경도를 소수점 6자리로 제한
+  drawIsochrone(lat, lng);
+});
+
+
 map.on('touchstart', e => {
   const touch = e.originalEvent.touches ? e.originalEvent.touches[0] : e.originalEvent;
   const latlng = map.mouseEventToLatLng(touch);
-  drawIsochrone(latlng.lat, latlng.lng);
+  const lat = latlng.lat.toFixed(6); // 위도를 소수점 6자리로 제한
+  const lng = latlng.lng.toFixed(6); // 경도를 소수점 6자리로 제한
+  drawIsochrone(lat, lng);
 });
 
 map.on('dblclick', function(e) {
