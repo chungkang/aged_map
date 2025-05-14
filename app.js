@@ -156,7 +156,7 @@ legend.onAdd = function(map) {
 legend.addTo(map);
 
 // 병원 필터 및 popup 기능을 위한 함수
-function updateIsochronePopup(isochroneGeoJSON) {
+function updateIsochronePopup(isochroneGeoJSON, lat, lon) {
   const isochronePolygon = turf.polygon(isochroneGeoJSON.features[0].geometry.coordinates);
 
   let generalHospitals = 0;
@@ -173,18 +173,28 @@ function updateIsochronePopup(isochroneGeoJSON) {
     }
   });
 
-  const popupContent = `
-    <strong>1시간 이내 병원 통계</strong><br>
-    상급종합: ${topHospitals}개<br>
-    종합병원: ${generalHospitals}개
-  `;
+  // 주소 검색을 통해 클릭한 위치의 주소를 가져옴
+  const query = encodeURIComponent(`${lat},${lon}`);
+  const reverseGeocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`;
 
-  isochroneLayer.bindPopup(popupContent);
+  fetch(reverseGeocodeUrl)
+    .then(response => response.json())
+    .then(data => {
+      const address = data && data.address ? data.address.road || '주소를 찾을 수 없습니다.' : '주소를 찾을 수 없습니다.';
 
-  isochroneLayer.on('mouseover', function(e) {
-    this.openPopup(e.latlng);
-  });
-  isochroneLayer.on('mouseout', function() {
-    this.closePopup();
-  });
+      const popupContent = `
+        <strong>클릭한 위치의 주소: <b>${address}</b></strong><br>
+        상급종합: ${topHospitals}개<br>
+        종합병원: ${generalHospitals}개
+      `;
+
+      isochroneLayer.bindPopup(popupContent);
+
+      isochroneLayer.on('mouseover', function(e) {
+        this.openPopup(e.latlng);
+      });
+      isochroneLayer.on('mouseout', function() {
+        this.closePopup();
+      });
+    });
 }
