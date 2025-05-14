@@ -181,16 +181,7 @@ function updateIsochronePopup(isochroneGeoJSON, lat, lon) {
   fetch(reverseGeocodeUrl)
     .then(response => response.json())
     .then(data => {
-      const addr = data.address;
-      const fullAddress = [
-        addr.state,
-        addr.city,
-        addr.county,
-        addr.town,
-        addr.suburb,
-        addr.road,
-        addr.house_number
-      ].filter(Boolean).join(' ');
+      const fullAddress = data.display_name || '주소를 찾을 수 없습니다.';
 
       const popupContent = `
         <strong>주소: <b>${fullAddress}</b></strong><br>
