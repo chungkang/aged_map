@@ -131,7 +131,7 @@ function drawIsochrone(lat, lng) {
   const minutes = 30;
 
   // Vercel에 배포한 API 엔드포인트 사용 (드라이빙 프로파일 기본)
-  const url = `https://aged-map.vercel.app/api/isochrone?lat=${lat}&lng=${lng}&minutes=${minutes}&profile=driving`;
+  const url = `https://golden-hour-map.vercel.app/api/isochrone?lat=${lat}&lng=${lng}&minutes=${minutes}&profile=driving`;
 
   fetch(url)
     .then(response => response.json())
