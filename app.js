@@ -35,6 +35,7 @@ fetch('hospital_data.geojson')
     };
 
     L.geoJSON(data, {
+      interactive: false,  // 클릭 이벤트 전파 가능하도록 설정
       pointToLayer: function(feature, latlng) {
         const type = feature.properties.종별코드명;
         if (type === '종합병원' || type === '상급종합') {
@@ -100,8 +101,14 @@ function drawIsochrone(lat, lng) {
 
 // 지도 클릭 시 Isochrone 계산
 map.on('click', function(e) {
-  if (e.originalEvent.detail === 2) return; // 더블클릭 무시
+  // 이 조건을 제거하거나 대체
+  // drawIsochrone은 더블클릭 이벤트 자체에서 막는 방식이 안전함
   drawIsochrone(e.latlng.lat, e.latlng.lng);
+});
+
+map.on('dblclick', function(e) {
+  // 아무 동작도 하지 않도록 해서 중복 호출 막기
+  e.originalEvent.preventDefault();
 });
 
 // 주소 검색 핀 및 Isochrone
