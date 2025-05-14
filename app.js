@@ -78,6 +78,8 @@ fetch('road.geojson')
 // Isochrone 그리기 함수
 function drawIsochrone(lat, lng) {
   if (isochroneLayer && map.hasLayer(isochroneLayer)) {
+    // 이전 이벤트 제거
+    isochroneLayer.off();
     map.removeLayer(isochroneLayer);
   }
 
@@ -99,9 +101,10 @@ function drawIsochrone(lat, lng) {
       map.fitBounds(isochroneLayer.getBounds());
 
       // 병원 필터 및 popup 업데이트
-      updateIsochronePopup(data);
+      updateIsochronePopup(data, lat, lng); // lat, lng 추가
     });
 }
+
 
 
 // 지도 클릭 시 Isochrone 계산
@@ -173,24 +176,26 @@ function updateIsochronePopup(isochroneGeoJSON, lat, lon) {
     }
   });
 
-  const roundedLat = lat.toFixed(5);
-  const roundedLon = lon.toFixed(5);
+  const reverseGeocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`;
 
-  const popupContent = `
-    <strong>위치 좌표</strong><br>
-    위도 (Lat): <b>${roundedLat}</b><br>
-    경도 (Lng): <b>${roundedLon}</b><br>
-    <br>
-    상급종합: ${topHospitals}개<br>
-    종합병원: ${generalHospitals}개
-  `;
+  fetch(reverseGeocodeUrl)
+    .then(response => response.json())
+    .then(data => {
+      const address = data?.address?.road || '주소를 찾을 수 없습니다.';
 
-  isochroneLayer.bindPopup(popupContent);
+      const popupContent = `
+        <strong>클릭한 위치의 주소: <b>${address}</b></strong><br>
+        상급종합: ${topHospitals}개<br>
+        종합병원: ${generalHospitals}개
+      `;
 
-  isochroneLayer.on('mouseover', function(e) {
-    this.openPopup(e.latlng);
-  });
-  isochroneLayer.on('mouseout', function() {
-    this.closePopup();
-  });
+      isochroneLayer.bindPopup(popupContent);
+
+      isochroneLayer.on('mouseover', function(e) {
+        this.openPopup(e.latlng);
+      });
+      isochroneLayer.on('mouseout', function() {
+        this.closePopup();
+      });
+    });
 }
