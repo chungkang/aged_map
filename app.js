@@ -103,7 +103,6 @@ function drawIsochrone(lat, lng) {
     });
 }
 
-
 // 지도 클릭 시 Isochrone 계산
 map.on('click', e => drawIsochrone(e.latlng.lat, e.latlng.lng));
 map.on('touchstart', e => {
@@ -112,32 +111,10 @@ map.on('touchstart', e => {
   drawIsochrone(latlng.lat, latlng.lng);
 });
 
-
 map.on('dblclick', function(e) {
   // 아무 동작도 하지 않도록 해서 중복 호출 막기
   e.originalEvent.preventDefault();
 });
-
-// 주소 검색 핀 및 Isochrone
-function searchAddress(address) {
-  const query = encodeURIComponent(address);
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}`;
-
-  fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      if (data.length > 0) {
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
-
-        const marker = L.marker([lat, lon]).addTo(map);
-        map.setView([lat, lon], 12);
-        drawIsochrone(lat, lon);
-      } else {
-        alert('주소를 찾을 수 없습니다.');
-      }
-    });
-}
 
 // 범례 추가
 const legend = L.control({ position: 'bottomright' });
@@ -173,28 +150,21 @@ function updateIsochronePopup(isochroneGeoJSON, lat, lon) {
     }
   });
 
-  // 주소 검색을 통해 클릭한 위치의 주소를 가져옴
-  const query = encodeURIComponent(`${lat},${lon}`);
-  const reverseGeocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`;
+  // 위도, 경도를 소수점 6자리까지 표시
+  const latLngText = `위도: ${lat.toFixed(6)}, 경도: ${lon.toFixed(6)}`;
 
-  fetch(reverseGeocodeUrl)
-    .then(response => response.json())
-    .then(data => {
-      const address = data && data.address ? data.address.road || '주소를 찾을 수 없습니다.' : '주소를 찾을 수 없습니다.';
+  const popupContent = `
+    <strong>클릭한 위치의 좌표: <b>${latLngText}</b></strong><br>
+    상급종합: ${topHospitals}개<br>
+    종합병원: ${generalHospitals}개
+  `;
 
-      const popupContent = `
-        <strong>클릭한 위치의 주소: <b>${address}</b></strong><br>
-        상급종합: ${topHospitals}개<br>
-        종합병원: ${generalHospitals}개
-      `;
+  isochroneLayer.bindPopup(popupContent);
 
-      isochroneLayer.bindPopup(popupContent);
-
-      isochroneLayer.on('mouseover', function(e) {
-        this.openPopup(e.latlng);
-      });
-      isochroneLayer.on('mouseout', function() {
-        this.closePopup();
-      });
-    });
+  isochroneLayer.on('mouseover', function(e) {
+    this.openPopup(e.latlng);
+  });
+  isochroneLayer.on('mouseout', function() {
+    this.closePopup();
+  });
 }
