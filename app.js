@@ -82,7 +82,7 @@ function drawIsochrone(lat, lng) {
   }
 
   const minutes = 60;
-  const url = `https://aged-map.vercel.app/api/isochrone?lat=${lat}&lng=${lng}&minutes=${minutes}&profile=driving`;
+  const url = `https://golden-hour-map.vercel.app/api/isochrone?lat=${lat}&lng=${lng}&minutes=${minutes}&profile=driving`;
 
   fetch(url)
     .then(response => response.json())
@@ -105,11 +105,13 @@ function drawIsochrone(lat, lng) {
 
 
 // 지도 클릭 시 Isochrone 계산
-map.on('click', function(e) {
-  // 이 조건을 제거하거나 대체
-  // drawIsochrone은 더블클릭 이벤트 자체에서 막는 방식이 안전함
-  drawIsochrone(e.latlng.lat, e.latlng.lng);
+map.on('click', e => drawIsochrone(e.latlng.lat, e.latlng.lng));
+map.on('touchstart', e => {
+  const touch = e.originalEvent.touches ? e.originalEvent.touches[0] : e.originalEvent;
+  const latlng = map.mouseEventToLatLng(touch);
+  drawIsochrone(latlng.lat, latlng.lng);
 });
+
 
 map.on('dblclick', function(e) {
   // 아무 동작도 하지 않도록 해서 중복 호출 막기
