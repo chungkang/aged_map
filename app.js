@@ -10,19 +10,6 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
 
 let roadLayer, boundaryLayer, hospitalLayer, isochroneLayer;
 
-// 도로 데이터 로드
-fetch('road.geojson')
-  .then(response => response.json())
-  .then(data => {
-    roadLayer = L.geoJSON(data, {
-      style: {
-        color: '#555',
-        weight: 2
-      }
-    });
-    roadLayer.addTo(map);
-  });
-
 // 행정경계 데이터 로드
 fetch('administrative_boundary.geojson')
   .then(response => response.json())
@@ -72,6 +59,19 @@ fetch('hospital_data.geojson')
     });
 
     hospitalLayer.addTo(map);
+  });
+
+// 도로 데이터 로드
+fetch('road.geojson')
+  .then(response => response.json())
+  .then(data => {
+    roadLayer = L.geoJSON(data, {
+      style: {
+        color: '#555',
+        weight: 2
+      }
+    });
+    roadLayer.addTo(map);
   });
 
 // Isochrone 그리기 함수
