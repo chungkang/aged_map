@@ -10,20 +10,6 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
 
 let roadLayer, boundaryLayer, hospitalLayer, isochroneLayer;
 
-// 행정경계 데이터 로드
-fetch('administrative_boundary.geojson')
-  .then(response => response.json())
-  .then(data => {
-    boundaryLayer = L.geoJSON(data, {
-      style: {
-        color: '#999',
-        weight: 1,
-        fillOpacity: 0.1
-      }
-    });
-    boundaryLayer.addTo(map);
-  });
-
 // 병원 데이터 로드
 fetch('hospital_data.geojson')
   .then(response => response.json())
@@ -60,6 +46,20 @@ fetch('hospital_data.geojson')
     });
 
     hospitalLayer.addTo(map);
+  });
+
+// 행정경계 데이터 로드
+fetch('administrative_boundary.geojson')
+  .then(response => response.json())
+  .then(data => {
+    boundaryLayer = L.geoJSON(data, {
+      style: {
+        color: '#999',
+        weight: 1,
+        fillOpacity: 0.1
+      }
+    });
+    boundaryLayer.addTo(map);
   });
 
 // 도로 데이터 로드
@@ -104,8 +104,6 @@ function drawIsochrone(lat, lng) {
       updateIsochronePopup(data, lat, lng); // lat, lng 추가
     });
 }
-
-
 
 // 지도 클릭 시 Isochrone 계산
 let clickTimeout = null;
