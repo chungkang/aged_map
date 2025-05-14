@@ -95,9 +95,14 @@ function drawIsochrone(lat, lng) {
           weight: 2
         }
       }).addTo(map);
+
       map.fitBounds(isochroneLayer.getBounds());
+
+      // 병원 필터 및 popup 업데이트
+      updateIsochronePopup(data);
     });
 }
+
 
 // 지도 클릭 시 Isochrone 계산
 map.on('click', function(e) {
@@ -147,3 +152,37 @@ legend.onAdd = function(map) {
   return div;
 };
 legend.addTo(map);
+
+// 병원 필터 및 popup 기능을 위한 함수
+function updateIsochronePopup(isochroneGeoJSON) {
+  const isochronePolygon = turf.polygon(isochroneGeoJSON.features[0].geometry.coordinates);
+
+  let generalHospitals = 0;
+  let topHospitals = 0;
+
+  hospitalLayer.eachLayer(layer => {
+    const latlng = layer.getLatLng();
+    const point = turf.point([latlng.lng, latlng.lat]);
+
+    if (turf.booleanPointInPolygon(point, isochronePolygon)) {
+      const type = layer.feature.properties.종별코드명;
+      if (type === '종합병원') generalHospitals++;
+      else if (type === '상급종합') topHospitals++;
+    }
+  });
+
+  const popupContent = `
+    <strong>1시간 이내 병원 통계</strong><br>
+    상급종합: ${topHospitals}개<br>
+    종합병원: ${generalHospitals}개
+  `;
+
+  isochroneLayer.bindPopup(popupContent);
+
+  isochroneLayer.on('mouseover', function(e) {
+    this.openPopup(e.latlng);
+  });
+  isochroneLayer.on('mouseout', function() {
+    this.closePopup();
+  });
+}
