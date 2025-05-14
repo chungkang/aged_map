@@ -222,17 +222,11 @@ function updateIsochronePopup(isochroneGeoJSON, lat, lon) {
 
       isochroneLayer.bindPopup(popupContent);
 
-      // 기존 PC hover
       isochroneLayer.on('mouseover', function(e) {
         this.openPopup(e.latlng);
       });
       isochroneLayer.on('mouseout', function() {
         this.closePopup();
-      });
-
-      // 모바일 대응 클릭 이벤트 추가
-      isochroneLayer.on('click', function(e) {
-        this.openPopup(e.latlng);
       });
     });
 }
