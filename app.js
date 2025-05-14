@@ -108,17 +108,48 @@ function drawIsochrone(lat, lng) {
 
 
 // 지도 클릭 시 Isochrone 계산
-map.on('click', e => drawIsochrone(e.latlng.lat, e.latlng.lng));
-map.on('touchstart', e => {
-  const touch = e.originalEvent.touches ? e.originalEvent.touches[0] : e.originalEvent;
-  const latlng = map.mouseEventToLatLng(touch);
-  drawIsochrone(latlng.lat, latlng.lng);
+let clickTimeout = null;
+
+function handleMapClick(lat, lng) {
+  // 이전 Isochrone 레이어 제거 + 새로 그리기
+  drawIsochrone(lat, lng);
+}
+
+map.on('click', function(e) {
+  if (clickTimeout !== null) {
+    clearTimeout(clickTimeout);
+    clickTimeout = null;
+  }
+
+  clickTimeout = setTimeout(() => {
+    handleMapClick(e.latlng.lat, e.latlng.lng);
+    clickTimeout = null;
+  }, 250); // 250ms 이내에 다시 클릭되면 실행 취소 (더블클릭 방지)
 });
 
+// 모바일에서 더블탭 방지를 위해 touchstart 처리
+map.on('touchstart', function(e) {
+  const touch = e.originalEvent.touches ? e.originalEvent.touches[0] : e.originalEvent;
+  const latlng = map.mouseEventToLatLng(touch);
 
+  if (clickTimeout !== null) {
+    clearTimeout(clickTimeout);
+    clickTimeout = null;
+  }
+
+  clickTimeout = setTimeout(() => {
+    handleMapClick(latlng.lat, latlng.lng);
+    clickTimeout = null;
+  }, 250); // 모바일도 동일한 딜레이 처리
+});
+
+// 더블클릭 이벤트 자체는 막기
 map.on('dblclick', function(e) {
-  // 아무 동작도 하지 않도록 해서 중복 호출 막기
   e.originalEvent.preventDefault();
+  if (clickTimeout !== null) {
+    clearTimeout(clickTimeout);
+    clickTimeout = null;
+  }
 });
 
 // 주소 검색 핀 및 Isochrone
@@ -184,7 +215,7 @@ function updateIsochronePopup(isochroneGeoJSON, lat, lon) {
       const fullAddress = data.display_name || '주소를 찾을 수 없습니다.';
 
       const popupContent = `
-        <strong>주소: <b>${fullAddress}</b></strong><br>
+        <strong>기준 위치 주소: <b>${fullAddress}</b></strong><br>
         상급종합: ${topHospitals}개<br>
         종합병원: ${generalHospitals}개
       `;
