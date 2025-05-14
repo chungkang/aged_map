@@ -75,7 +75,7 @@ fetch('road.geojson')
     roadLayer.addTo(map);
   });
 
-// Isochrone 그리기 함수에서 위도 경도 사용
+// Isochrone 그리기 함수
 function drawIsochrone(lat, lng) {
   if (isochroneLayer && map.hasLayer(isochroneLayer)) {
     map.removeLayer(isochroneLayer);
@@ -97,32 +97,19 @@ function drawIsochrone(lat, lng) {
       }).addTo(map);
 
       map.fitBounds(isochroneLayer.getBounds());
+
+      // 병원 필터 및 popup 업데이트
       updateIsochronePopup(data);
     });
 }
 
-// 지도 클릭 시 Isochrone 계산
-map.on('click', e => {
-  const latlng = e.latlng; // latlng 객체가 제대로 전달되는지 확인
-  if (latlng) {
-    const lat = latlng.lat.toFixed(6); // 위도를 소수점 6자리로 제한
-    const lng = latlng.lng.toFixed(6); // 경도를 소수점 6자리로 제한
-    drawIsochrone(lat, lng);
-  } else {
-    console.log("latlng is undefined");
-  }
-});
 
+// 지도 클릭 시 Isochrone 계산
+map.on('click', e => drawIsochrone(e.latlng.lat, e.latlng.lng));
 map.on('touchstart', e => {
   const touch = e.originalEvent.touches ? e.originalEvent.touches[0] : e.originalEvent;
   const latlng = map.mouseEventToLatLng(touch);
-  if (latlng) {
-    const lat = latlng.lat.toFixed(6); // 위도를 소수점 6자리로 제한
-    const lng = latlng.lng.toFixed(6); // 경도를 소수점 6자리로 제한
-    drawIsochrone(lat, lng);
-  } else {
-    console.log("latlng is undefined");
-  }
+  drawIsochrone(latlng.lat, latlng.lng);
 });
 
 
@@ -130,6 +117,27 @@ map.on('dblclick', function(e) {
   // 아무 동작도 하지 않도록 해서 중복 호출 막기
   e.originalEvent.preventDefault();
 });
+
+// 주소 검색 핀 및 Isochrone
+function searchAddress(address) {
+  const query = encodeURIComponent(address);
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}`;
+
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      if (data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+
+        const marker = L.marker([lat, lon]).addTo(map);
+        map.setView([lat, lon], 12);
+        drawIsochrone(lat, lon);
+      } else {
+        alert('주소를 찾을 수 없습니다.');
+      }
+    });
+}
 
 // 범례 추가
 const legend = L.control({ position: 'bottomright' });
@@ -165,19 +173,28 @@ function updateIsochronePopup(isochroneGeoJSON, lat, lon) {
     }
   });
 
-  // lat, lon을 표시
-  const popupContent = `
-    <strong>위치: <b>위도: ${lat}, 경도: ${lon}</b></strong><br>
-    상급종합: ${topHospitals}개<br>
-    종합병원: ${generalHospitals}개
-  `;
+  // 주소 검색을 통해 클릭한 위치의 주소를 가져옴
+  const query = encodeURIComponent(`${lat},${lon}`);
+  const reverseGeocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`;
 
-  isochroneLayer.bindPopup(popupContent);
+  fetch(reverseGeocodeUrl)
+    .then(response => response.json())
+    .then(data => {
+      const address = data && data.address ? data.address.road || '주소를 찾을 수 없습니다.' : '주소를 찾을 수 없습니다.';
 
-  isochroneLayer.on('mouseover', function(e) {
-    this.openPopup(e.latlng);
-  });
-  isochroneLayer.on('mouseout', function() {
-    this.closePopup();
-  });
+      const popupContent = `
+        <strong>클릭한 위치의 주소: <b>${address}</b></strong><br>
+        상급종합: ${topHospitals}개<br>
+        종합병원: ${generalHospitals}개
+      `;
+
+      isochroneLayer.bindPopup(popupContent);
+
+      isochroneLayer.on('mouseover', function(e) {
+        this.openPopup(e.latlng);
+      });
+      isochroneLayer.on('mouseout', function() {
+        this.closePopup();
+      });
+    });
 }
