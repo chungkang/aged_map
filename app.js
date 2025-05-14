@@ -102,21 +102,29 @@ function drawIsochrone(lat, lng) {
 }
 
 // 지도 클릭 시 Isochrone 계산
-// 지도 클릭 시 Isochrone 계산
 map.on('click', e => {
-  const lat = e.latlng.lat.toFixed(6); // 위도를 소수점 6자리로 제한
-  const lng = e.latlng.lng.toFixed(6); // 경도를 소수점 6자리로 제한
-  drawIsochrone(lat, lng);
+  const latlng = e.latlng; // latlng 객체가 제대로 전달되는지 확인
+  if (latlng) {
+    const lat = latlng.lat.toFixed(6); // 위도를 소수점 6자리로 제한
+    const lng = latlng.lng.toFixed(6); // 경도를 소수점 6자리로 제한
+    drawIsochrone(lat, lng);
+  } else {
+    console.log("latlng is undefined");
+  }
 });
-
 
 map.on('touchstart', e => {
   const touch = e.originalEvent.touches ? e.originalEvent.touches[0] : e.originalEvent;
   const latlng = map.mouseEventToLatLng(touch);
-  const lat = latlng.lat.toFixed(6); // 위도를 소수점 6자리로 제한
-  const lng = latlng.lng.toFixed(6); // 경도를 소수점 6자리로 제한
-  drawIsochrone(lat, lng);
+  if (latlng) {
+    const lat = latlng.lat.toFixed(6); // 위도를 소수점 6자리로 제한
+    const lng = latlng.lng.toFixed(6); // 경도를 소수점 6자리로 제한
+    drawIsochrone(lat, lng);
+  } else {
+    console.log("latlng is undefined");
+  }
 });
+
 
 map.on('dblclick', function(e) {
   // 아무 동작도 하지 않도록 해서 중복 호출 막기
