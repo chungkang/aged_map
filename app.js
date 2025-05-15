@@ -214,7 +214,7 @@ function updateIsochronePopup(isochroneGeoJSON, lat, lon) {
 
       const popupContent = `
         <strong>기준 위치 주소: <b>${fullAddress}</b></strong><br>
-        상급종합: ${topHospitals}개<br>
+        상급종합병원: ${topHospitals}개<br>
         종합병원: ${generalHospitals}개
       `;
 
