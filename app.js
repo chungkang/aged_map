@@ -181,7 +181,7 @@ legend.onAdd = function(map) {
     <i style="background:#999; width:14px; height:14px; display:inline-block"></i> 행정경계<br>
     <i style="background:red; width:14px; height:14px; display:inline-block"></i> 상급종합병원<br>
     <i style="background:orange; width:14px; height:14px; display:inline-block"></i> 종합병원<br>
-    <i style="background:blue; opacity:0.3; width:14px; height:14px; display:inline-block; border: 1px solid blue"></i> 1시간 이내 Isochrone
+    <i style="background:blue; opacity:0.3; width:14px; height:14px; display:inline-block; border: 1px solid blue"></i> 차로 1시간 거리
   `;
   return div;
 };
