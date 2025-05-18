@@ -84,7 +84,7 @@ function drawIsochrone(lat, lng) {
   }
 
   const minutes = 60;
-  const url = `https://golden-hour-map.vercel.app/api/isochrone?lat=${lat}&lng=${lng}&minutes=${minutes}&profile=driving`;
+  const url = `https://golden-time-map.vercel.app/api/isochrone?lat=${lat}&lng=${lng}&minutes=${minutes}&profile=driving`;
 
   fetch(url)
     .then(response => response.json())
